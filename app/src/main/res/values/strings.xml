@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Contour</string>
+    <string name="wallpaper_description">Contour lines over a gradient that shifts through the day.</string>
+    <string name="title_editor">Anchor</string>
+</resources>

@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="32dp">
+
+        <dev.contour.wallpaper.ui.PreviewView
+            android:id="@+id/preview"
+            android:layout_width="wrap_content"
+            android:layout_height="300dp"
+            android:layout_gravity="center_horizontal" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/preview_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="00:00"
+                android:textColor="#1B2A4A"
+                android:textSize="24sp" />
+
+            <Button
+                android:id="@+id/btn_now"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="12dp"
+                android:text="Now" />
+        </LinearLayout>
+
+        <SeekBar
+            android:id="@+id/seek_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="1439" />
+
+        <Button
+            android:id="@+id/btn_apply"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Set as wallpaper" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                style="@style/SectionTitle"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_marginTop="0dp"
+                android:layout_marginBottom="0dp"
+                android:text="Daily anchors" />
+
+            <Button
+                android:id="@+id/btn_add"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="+ Add" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/anchor_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <Button
+            android:id="@+id/btn_restore"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Restore defaults" />
+
+        <TextView style="@style/SectionTitle" android:text="Line layers" />
+
+        <RadioGroup
+            android:id="@+id/group_layers"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/radio_three"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Three colours" />
+
+            <RadioButton
+                android:id="@+id/radio_single"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Single colour" />
+        </RadioGroup>
+
+        <TextView
+            style="@style/Hint"
+            android:text="Single colour uses the line 2 colour and one bitmap (less memory)." />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                style="@style/SectionTitle"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="Line legibility" />
+
+            <TextView
+                android:id="@+id/contrast_value"
+                style="@style/SectionTitle"
+                android:layout_width="wrap_content"
+                android:text="2.1" />
+        </LinearLayout>
+
+        <SeekBar
+            android:id="@+id/seek_contrast"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="20" />
+
+        <TextView
+            style="@style/Hint"
+            android:text="Minimum contrast of each line colour against the background. 1.0 turns the lock off; default 2.1." />
+
+        <TextView style="@style/SectionTitle" android:text="Update interval" />
+
+        <RadioGroup
+            android:id="@+id/group_interval"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/radio_1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="1 min" />
+
+            <RadioButton
+                android:id="@+id/radio_5"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="5 min" />
+
+            <RadioButton
+                android:id="@+id/radio_15"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="15 min" />
+        </RadioGroup>
+
+        <TextView style="@style/SectionTitle" android:text="Sunrise and sunset" />
+
+        <CheckBox
+            android:id="@+id/check_solar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Follow the sun automatically" />
+
+        <TextView
+            style="@style/Hint"
+            android:text="While this is on, your anchor times are overridden. The 5:00 anchor is moved to today's sunrise and the 20:00 one to sunset; every other anchor shifts with them. Each anchor below shows the clock time it actually happens at." />
+
+        <TextView
+            android:id="@+id/solar_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="#1B2A4A"
+            android:textSize="14sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/edit_lat"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Latitude"
+                android:inputType="numberDecimal|numberSigned"
+                android:maxLines="1" />
+
+            <EditText
+                android:id="@+id/edit_lon"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_weight="1"
+                android:hint="Longitude"
+                android:inputType="numberDecimal|numberSigned"
+                android:maxLines="1" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_locate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Use my location" />
+
+        <TextView
+            style="@style/Hint"
+            android:text="Location is read once and stored as coordinates. The wallpaper never queries GPS — it only does the arithmetic, so there is no battery cost." />
+
+        <TextView style="@style/SectionTitle" android:text="Palette" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_export"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Export JSON" />
+
+            <Button
+                android:id="@+id/btn_import"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginLeft="8dp"
+                android:text="Import JSON" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

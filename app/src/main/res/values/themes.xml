@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Contour" parent="android:Theme.Material.Light">
+        <item name="android:colorPrimary">#1B2A4A</item>
+        <item name="android:colorPrimaryDark">#05070F</item>
+        <item name="android:colorAccent">#C56B14</item>
+    </style>
+</resources>

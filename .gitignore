@@ -1,0 +1,15 @@
+# saidas de build
+build-local/
+build/
+app/build/
+.gradle/
+local.properties
+
+# assets gerados pelo script (os do app ficam em app/src/main/assets)
+tools/assets/
+
+# ferramentas / IDE
+.idea/
+*.iml
+.DS_Store
+*.keystore
