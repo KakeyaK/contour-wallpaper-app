@@ -54,6 +54,7 @@ diferentes das da interna e o mapa saltava ao desdobrar (critério de aceitaçã
 | `ColorAnchor.kt` | Modelo da âncora (hora + 5 cores), `DayColors`, `LayerMode`, JSON |
 | `ColorMath.kt` | Hex, lerp, smoothstep, luminância WCAG, HLS, **trava de contraste** |
 | `SolarTime.kt` | Nascer/pôr do sol (NOAA) e o `SolarWarp` que ajusta a hora da paleta |
+| `SimplePalette.kt` | Modo de uma cor só: deriva as cinco cores de uma âncora a partir de um seed |
 | `Palette.kt` | Paleta padrão (6 âncoras), interpolação com volta pela meia-noite |
 | `PaletteRepository.kt` | Persistência em `SharedPreferences`, importar/exportar JSON |
 | `ContourRenderer.kt` | Compositor: gradiente + PNGs tingidos com `SRC_IN`; escolha `_cover`/`_main` |
@@ -69,6 +70,32 @@ diferentes das da interna e o mapa saltava ao desdobrar (critério de aceitaçã
 A interface do app é toda em inglês (incluindo os nomes das âncoras padrão: Dawn,
 Morning, Midday, Afternoon, Dusk, Night). Os comentários do código e este README seguem
 em português.
+
+## Modo de uma cor só
+
+No editor de âncora há duas opções: **One colour** e **All five**. No primeiro, o usuário
+escolhe uma cor base e as cinco saem dela por uma regra fixa (`SimplePalette.derive`):
+
+- o fundo vira duas versões da cor base, mais escura em cima e mais clara embaixo, com um
+  leve desvio de matiz e menos saturação embaixo (o que o céu faz de verdade); se a cor
+  base estiver muito perto do preto ou do branco, o par inteiro desliza para dentro da
+  faixa, senão o gradiente achata;
+- as linhas vão para o lado claro se o fundo for escuro e para o escuro nos demais casos;
+- cada faixa de altitude tem um **contraste alvo**: 2.3, 3.1 e 4.2. Esse é o ponto que
+  resolve o problema das linhas brigando com o fundo — antes só existia um piso (a trava
+  de legibilidade), então nada impedia uma linha de estourar para 8 ou 10 de contraste;
+- os matizes das linhas ficam a poucos graus da cor base (-12°, +6°, +18°), com a do meio
+  dessaturada, para as três faixas se separarem sem sair da família de cor.
+
+O alvo nunca fica abaixo da trava de legibilidade escolhida nas configurações, então a
+trava não precisa corrigir nada depois. O editor mostra as cinco cores geradas e o
+contraste de cada linha, para a regra não ser uma caixa-preta.
+
+O seed fica gravado na âncora (campo `seed` no JSON) só para a tela lembrar de onde as
+cores vieram — as cinco cores continuam sempre gravadas, e o desenho e a interpolação não
+mudam nada. Editar qualquer uma das cinco à mão desliga o modo simples daquela âncora.
+As âncoras padrão vêm sem seed, no modo **All five**, porque suas cores são escolhidas a
+mão e não seguem a regra.
 
 ## Modo solar (acompanhar o nascer e o pôr do sol)
 

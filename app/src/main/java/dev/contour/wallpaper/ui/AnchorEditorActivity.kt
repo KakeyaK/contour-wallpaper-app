@@ -6,11 +6,14 @@ import android.app.TimePickerDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.RadioGroup
 import android.widget.TextView
 import dev.contour.wallpaper.ColorAnchor
+import dev.contour.wallpaper.ColorMath
 import dev.contour.wallpaper.Palette
 import dev.contour.wallpaper.PaletteRepository
 import dev.contour.wallpaper.R
@@ -30,6 +33,13 @@ class AnchorEditorActivity : Activity() {
 
     private lateinit var editName: EditText
     private lateinit var textHour: TextView
+    private lateinit var simpleBlock: LinearLayout
+    private lateinit var customBlock: LinearLayout
+    private lateinit var derivedPreview: TextView
+    private lateinit var derivedSwatches: LinearLayout
+    private val showColor = ArrayList<(Int) -> Unit>(5)
+    private var showSeed: ((Int) -> Unit)? = null
+    private var syncing = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,13 +67,30 @@ class AnchorEditorActivity : Activity() {
             ).show()
         }
 
+        simpleBlock = byId(R.id.simple_block)
+        customBlock = byId(R.id.custom_block)
+        derivedPreview = byId(R.id.derived_preview)
+        derivedSwatches = byId(R.id.derived_swatches)
+
         val bgRows = byId<LinearLayout>(R.id.bg_rows)
         val lineRows = byId<LinearLayout>(R.id.line_rows)
-        addRow(bgRows, "Top", anchor.bgTop) { anchor = anchor.copy(bgTop = it) }
-        addRow(bgRows, "Bottom", anchor.bgBottom) { anchor = anchor.copy(bgBottom = it) }
-        addRow(lineRows, "Line 1 — lowest band", anchor.line1) { anchor = anchor.copy(line1 = it) }
-        addRow(lineRows, "Line 2 — middle band", anchor.line2) { anchor = anchor.copy(line2 = it) }
-        addRow(lineRows, "Line 3 — highest band", anchor.line3) { anchor = anchor.copy(line3 = it) }
+        // Editar uma cor à mão desliga o modo simples: as cinco deixam de vir do seed.
+        showColor += addRow(bgRows, "Top", anchor.bgTop) { anchor = anchor.copy(bgTop = it, seed = null) }
+        showColor += addRow(bgRows, "Bottom", anchor.bgBottom) { anchor = anchor.copy(bgBottom = it, seed = null) }
+        showColor += addRow(lineRows, "Line 1 — lowest band", anchor.line1) { anchor = anchor.copy(line1 = it, seed = null) }
+        showColor += addRow(lineRows, "Line 2 — middle band", anchor.line2) { anchor = anchor.copy(line2 = it, seed = null) }
+        showColor += addRow(lineRows, "Line 3 — highest band", anchor.line3) { anchor = anchor.copy(line3 = it, seed = null) }
+
+        showSeed = addRow(byId(R.id.seed_row), "Base colour", anchor.seed ?: suggestSeed()) { applySeed(it) }
+
+        val groupMode = byId<RadioGroup>(R.id.group_mode)
+        groupMode.check(if (anchor.seed != null) R.id.radio_simple else R.id.radio_custom)
+        groupMode.setOnCheckedChangeListener { _, id ->
+            if (syncing) return@setOnCheckedChangeListener
+            if (id == R.id.radio_simple) applySeed(anchor.seed ?: suggestSeed()) else anchor = anchor.copy(seed = null)
+            showMode()
+        }
+        showMode()
 
         byId<Button>(R.id.btn_save).setOnClickListener { save() }
 
@@ -78,10 +105,53 @@ class AnchorEditorActivity : Activity() {
         }
     }
 
-    private fun addRow(container: LinearLayout, label: String, initial: Int, onChange: (Int) -> Unit) {
+    private fun addRow(
+        container: LinearLayout,
+        label: String,
+        initial: Int,
+        onChange: (Int) -> Unit,
+    ): (Int) -> Unit {
         val row = LayoutInflater.from(this).inflate(R.layout.row_color, container, false)
-        bindColorRow(row, label, initial, onChange)
+        val update = bindColorRow(row, label, initial, onChange)
         container.addView(row)
+        return update
+    }
+
+    /** Cor base inicial quando a âncora nunca teve seed: a de baixo do fundo. */
+    private fun suggestSeed(): Int = anchor.bgBottom
+
+    private fun applySeed(seed: Int) {
+        anchor = anchor.withSeed(seed, repo.contrastTarget)
+        syncing = true
+        showSeed?.invoke(seed)
+        showColor.getOrNull(0)?.invoke(anchor.bgTop)
+        showColor.getOrNull(1)?.invoke(anchor.bgBottom)
+        showColor.getOrNull(2)?.invoke(anchor.line1)
+        showColor.getOrNull(3)?.invoke(anchor.line2)
+        showColor.getOrNull(4)?.invoke(anchor.line3)
+        syncing = false
+        showDerived()
+    }
+
+    private fun showMode() {
+        val simple = anchor.seed != null
+        simpleBlock.visibility = if (simple) View.VISIBLE else View.GONE
+        customBlock.visibility = if (simple) View.GONE else View.VISIBLE
+        if (simple) showDerived()
+    }
+
+    /** Mostra as cinco cores geradas e o contraste de cada linha, para não ser caixa-preta. */
+    private fun showDerived() {
+        val bg = ColorMath.average(anchor.bgTop, anchor.bgBottom)
+        derivedPreview.text = "line contrast  " + listOf(anchor.line1, anchor.line2, anchor.line3)
+            .joinToString("   ") { String.format("%.1f", ColorMath.contrastRatio(it, bg)) }
+        derivedSwatches.removeAllViews()
+        val size = (34 * resources.displayMetrics.density).toInt()
+        listOf(anchor.bgTop, anchor.bgBottom, anchor.line1, anchor.line2, anchor.line3).forEach { c ->
+            val v = View(this)
+            v.setSwatchColor(c, radiusDp = 4f)
+            derivedSwatches.addView(v, LinearLayout.LayoutParams(size, LinearLayout.LayoutParams.MATCH_PARENT))
+        }
     }
 
     private fun showHour() {

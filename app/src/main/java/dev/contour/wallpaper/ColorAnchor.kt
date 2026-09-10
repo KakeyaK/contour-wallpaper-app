@@ -12,7 +12,26 @@ data class ColorAnchor(
     val line1: Int,
     val line2: Int,
     val line3: Int,
+    /**
+     * Cor base do modo simples, ou null quando as cinco cores foram escolhidas à mão.
+     * As cinco cores continuam sempre gravadas — o seed serve para a tela lembrar de que
+     * cor elas vieram, então o desenho e a interpolação não mudam nada.
+     */
+    val seed: Int? = null,
 ) {
+    /** Recalcula as cinco cores a partir de [seed], mantendo hora e nome. */
+    fun withSeed(seed: Int, contrastFloor: Float): ColorAnchor {
+        val c = SimplePalette.derive(seed, contrastFloor)
+        return copy(
+            bgTop = c.bgTop,
+            bgBottom = c.bgBottom,
+            line1 = c.line1,
+            line2 = c.line2,
+            line3 = c.line3,
+            seed = seed,
+        )
+    }
+
     fun toJson(): JSONObject = JSONObject().apply {
         put("hour", hour.toDouble())
         put("name", name)
@@ -21,6 +40,7 @@ data class ColorAnchor(
         put("line1", ColorMath.toHex(line1))
         put("line2", ColorMath.toHex(line2))
         put("line3", ColorMath.toHex(line3))
+        seed?.let { put("seed", ColorMath.toHex(it)) }
     }
 
     companion object {
@@ -36,6 +56,7 @@ data class ColorAnchor(
                 line1 = c("line1") ?: return null,
                 line2 = c("line2") ?: return null,
                 line3 = c("line3") ?: return null,
+                seed = if (o.has("seed")) c("seed") else null,
             )
         }
 
