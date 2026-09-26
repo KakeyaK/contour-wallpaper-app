@@ -1,35 +1,36 @@
 package dev.contour.wallpaper
 
 /**
- * Modo simples: monta as cinco cores de uma âncora a partir de UMA cor escolhida
- * pelo usuário.
+ * Simple mode: builds an anchor's five colours from ONE colour picked by the user.
  *
- * A regra existe porque montar as cinco cores à mão não tem critério nenhum, e o
- * resultado costuma cair num de dois extremos: ou as linhas somem no fundo, ou brigam
- * com ele. Aqui as linhas nascem com contraste dentro de uma faixa confortável — nem
- * abaixo do mínimo legível, nem estourando — e no mesmo território de matiz do fundo.
+ * The rule exists because picking the five colours by hand has no criterion at all, and
+ * the result tends to land at one of two extremes: either the lines vanish into the
+ * background, or they clash with it. Here the lines are born with contrast inside a
+ * comfortable range — neither below the legible minimum nor blowing past it — and in the
+ * same hue territory as the background.
  *
- * O que a regra faz:
- *  1. **Fundo**: duas versões da cor base, uma um pouco mais escura em cima e outra mais
- *     clara embaixo, com um leve desvio de matiz e menos saturação na de baixo — é o que
- *     o céu faz de verdade. Se a cor base estiver muito perto do preto ou do branco, o
- *     par inteiro é deslocado para dentro da faixa, senão o gradiente achata.
- *  2. **Lado das linhas**: fundo escuro pede linhas mais claras; qualquer outro caso pede
- *     linhas mais escuras, que é o que faz um mapa topográfico parecer impresso.
- *  3. **Contraste alvo por faixa de altitude**: 2.3, 3.1 e 4.2. A faixa baixa fica
- *     discreta e a alta mais marcada, dando profundidade sem nenhuma linha gritar. O
- *     alvo nunca fica abaixo da trava de legibilidade escolhida nas configurações, então
- *     a trava não precisa mexer em nada depois.
- *  4. **Matiz e saturação**: as linhas ficam a poucos graus da cor base (-12°, +6°, +18°),
- *     com a do meio dessaturada — variação suficiente para as três faixas se separarem
- *     sem sair da família de cor.
+ * What the rule does:
+ *  1. **Background**: two versions of the base colour, a slightly darker one at the top and
+ *     a lighter one at the bottom, with a slight hue shift and less saturation at the
+ *     bottom — which is what the sky actually does. If the base colour is very close to
+ *     black or white, the whole pair slides inward into range, otherwise the gradient
+ *     flattens.
+ *  2. **Line side**: a dark background calls for lighter lines; any other case calls for
+ *     darker lines, which is what makes a topographic map look printed.
+ *  3. **Target contrast per altitude band**: 2.3, 3.1 and 4.2. The low band stays subtle
+ *     and the high one more pronounced, giving depth without any line shouting. The target
+ *     is never below the legibility lock chosen in the settings, so the lock never has to
+ *     correct anything afterwards.
+ *  4. **Hue and saturation**: the lines stay within a few degrees of the base colour
+ *     (-12°, +6°, +18°), with the middle one desaturated — enough variation for the three
+ *     bands to separate without leaving the colour family.
  */
 object SimplePalette {
 
-    /** Contraste alvo de cada faixa de altitude contra a média do fundo. */
+    /** Target contrast of each altitude band against the background average. */
     private val TARGETS = floatArrayOf(2.3f, 3.1f, 4.2f)
 
-    /** Desvio de matiz de cada linha, em voltas (1.0 = 360°). */
+    /** Hue shift of each line, in turns (1.0 = 360°). */
     private val HUE_SHIFT = floatArrayOf(-12f / 360f, 6f / 360f, 18f / 360f)
 
     private val SAT_MULTIPLIER = floatArrayOf(0.85f, 0.62f, 1.0f)
@@ -39,12 +40,12 @@ object SimplePalette {
     private const val MIN_LIGHTNESS = 0.05f
     private const val MAX_LIGHTNESS = 0.95f
 
-    /** Abaixo desta luminância o fundo é considerado escuro e as linhas vão para o claro. */
+    /** Below this luminance the background counts as dark and the lines go light. */
     private const val DARK_BACKGROUND = 0.18
 
     /**
-     * Deriva as cinco cores a partir de [seed]. [contrastFloor] é a trava de
-     * legibilidade das configurações: os alvos nunca ficam abaixo dela.
+     * Derives the five colours from [seed]. [contrastFloor] is the legibility lock from
+     * the settings: the targets never go below it.
      */
     fun derive(seed: Int, contrastFloor: Float = Palette.DEFAULT_CONTRAST): DayColors {
         val hls = ColorMath.rgbToHls(seed)
@@ -75,8 +76,8 @@ object SimplePalette {
             val h = hue + HUE_SHIFT[i]
             val s = minOf(1f, saturation * SAT_MULTIPLIER[i])
             var color = colorAtContrast(h, s, background, target, lighterLines)
-            // Se aquele lado não alcança o alvo (base muito clara ou muito escura),
-            // tenta o outro e fica com o que chega mais perto.
+            // If that side can't reach the target (base too light or too dark),
+            // try the other one and keep whichever gets closer.
             if (ColorMath.contrastRatio(color, background) < target - 0.25) {
                 val alternative = colorAtContrast(h, s, background, target, !lighterLines)
                 val dCurrent = Math.abs(ColorMath.contrastRatio(color, background) - target)
@@ -90,9 +91,9 @@ object SimplePalette {
     }
 
     /**
-     * Varre a luminosidade e devolve a cor cujo contraste contra [background] chega mais
-     * perto de [target], mantendo-se do lado pedido (mais clara ou mais escura que o
-     * fundo). Varredura simples: roda uma vez, quando o usuário escolhe a cor.
+     * Sweeps lightness and returns the colour whose contrast against [background] gets
+     * closest to [target], staying on the requested side (lighter or darker than the
+     * background). A simple sweep: it runs once, when the user picks the colour.
      */
     private fun colorAtContrast(
         hue: Float,

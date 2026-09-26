@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Opcional: só para preencher as coordenadas do modo solar com um toque.
-         Sem ela o usuário ainda pode digitar latitude e longitude. -->
+    <!-- Optional: only used to fill in the solar mode coordinates with one tap.
+         Without it the user can still type in latitude and longitude. -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
-    <!-- Localização é conveniência, não requisito: sem hardware de GPS o app instala
-         normalmente e o usuário digita as coordenadas. -->
+    <!-- Location is a convenience, not a requirement: without GPS hardware the app installs
+         normally and the user types in the coordinates. -->
     <uses-feature
         android:name="android.hardware.location"
         android:required="false" />

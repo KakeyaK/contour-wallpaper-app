@@ -40,7 +40,7 @@ class ContourWallpaperService : WallpaperService() {
 
         override fun onSurfaceChanged(holder: SurfaceHolder, format: Int, w: Int, h: Int) {
             super.onSurfaceChanged(holder, format, w, h)
-            // Não assumir o tamanho da tela: launchers pedem superfícies mais largas.
+            // Don't assume the screen size: launchers request wider surfaces.
             width = w
             height = h
             renderer.ensureAssets(renderer.chooseSet(w, h), repo.layerMode)
@@ -62,7 +62,7 @@ class ContourWallpaperService : WallpaperService() {
                 drawFrame()
                 scheduleNext()
             } else {
-                // Tela apagada / outro app: cancela tudo e para completamente.
+                // Screen off / another app: cancel everything and stop completely.
                 handler.removeCallbacks(tick)
             }
         }
@@ -77,7 +77,7 @@ class ContourWallpaperService : WallpaperService() {
             }
         }
 
-        /** Agenda o próximo redesenho na virada do próximo intervalo. Só quando visível. */
+        /** Schedules the next redraw at the start of the next interval. Only while visible. */
         private fun scheduleNext() {
             handler.removeCallbacks(tick)
             if (!visible) return
@@ -88,9 +88,9 @@ class ContourWallpaperService : WallpaperService() {
         }
 
         /**
-         * Hora que a paleta usa. Com o modo solar ligado, a hora do relógio passa pelo
-         * SolarWarp — só aritmética sobre as coordenadas já guardadas, sem consultar
-         * localização nem rede aqui dentro.
+         * Hour used by the palette. With solar mode on, the clock time goes through
+         * SolarWarp — just arithmetic on the stored coordinates, with no location or
+         * network lookups in here.
          */
         private fun currentHour(): Float {
             val c = Calendar.getInstance()

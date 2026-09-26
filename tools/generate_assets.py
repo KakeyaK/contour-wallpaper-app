@@ -1,25 +1,25 @@
 #!/usr/bin/env python3
 """
-gerar_assets.py — gera os PNGs transparentes de curvas de nivel usados como
-assets do live wallpaper.
+generate_assets.py — generates the transparent contour-line PNGs used as
+assets by the live wallpaper.
 
     pip install numpy matplotlib
-    python gerar_assets.py
+    python generate_assets.py
 
-Saida (pasta ./assets):
-    linhas_cover.png     1080x2520  todas as curvas, camada unica
-    linhas1_cover.png    faixa de altitude baixa
-    linhas2_cover.png    faixa intermediaria
-    linhas3_cover.png    faixa alta
-    linhas_main.png      1968x2184  idem, para a tela interna do dobravel
-    linhas1_main.png ... linhas3_main.png
+Output (./assets folder):
+    lines_cover.png      1080x2520  all contours, single layer
+    lines1_cover.png     low altitude band
+    lines2_cover.png     middle band
+    lines3_cover.png     high band
+    lines_main.png       1968x2184  same, for the foldable's inner screen
+    lines1_main.png ... lines3_main.png
 
-As curvas sao desenhadas em BRANCO com fundo transparente: no app, um
-PorterDuffColorFilter(cor, SRC_IN) troca a cor preservando o canal alfa.
+The contours are drawn in WHITE on a transparent background: in the app, a
+PorterDuffColorFilter(color, SRC_IN) swaps the colour while keeping the alpha channel.
 
-Os dois conjuntos saem do MESMO campo de relevo e na mesma escala — o recorte
-da tela externa e a faixa central da interna, entao ao desdobrar o aparelho o
-mapa continua em vez de trocar de imagem.
+Both sets come from the SAME terrain field at the same scale — the outer screen's
+crop is the central strip of the inner one, so when the device is unfolded the
+map continues instead of switching to a different image.
 """
 
 import os
@@ -29,16 +29,16 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-SEED = 42          # mesmo seed = mesmo relevo, sempre
-OCTAVES = 5        # 2 = formas amplas e organicas, 6+ = relevo detalhado
-LEVELS = 34        # quantidade de curvas
-GRID_H = 700       # resolucao de amostragem do campo
+SEED = 42          # same seed = same terrain, always
+OCTAVES = 5        # 2 = broad, organic shapes; 6+ = detailed terrain
+LEVELS = 34        # number of contours
+GRID_H = 700       # field sampling resolution
 COVER = (1080, 2520)
 MAIN = (1968, 2184)
 
 
 def fractal_noise(h, w, octaves, persistence=0.55, rng=None):
-    """Ruido fractal suave via filtragem passa-baixa no dominio da frequencia."""
+    """Smooth fractal noise via low-pass filtering in the frequency domain."""
     rng = rng or np.random.default_rng()
     field = np.zeros((h, w))
     amplitude, total = 1.0, 0.0
@@ -65,7 +65,7 @@ def fractal_noise(h, w, octaves, persistence=0.55, rng=None):
 
 
 def add_flow(field, rng, strength=0.35):
-    """Distorce o campo com um gradiente diagonal, evitando manchas isoladas."""
+    """Skews the field with a diagonal gradient, avoiding isolated blobs."""
     h, w = field.shape
     yy, xx = np.mgrid[0:h, 0:w]
     angle = rng.uniform(0, np.pi)
@@ -80,7 +80,7 @@ def build_field(width, height, seed, octaves, grid_h=GRID_H):
 
 
 def center_strip(field):
-    """Recorta do campo da tela interna a faixa com a proporcao da tela externa."""
+    """Crops the strip with the outer screen's aspect ratio from the inner-screen field."""
     frac = (COVER[0] / COVER[1]) / (MAIN[0] / MAIN[1])
     grid_h, grid_w = field.shape
     strip = max(2, int(round(grid_w * frac)))
@@ -89,9 +89,9 @@ def center_strip(field):
 
 
 def contour_levels(field, levels=LEVELS):
-    """Niveis de altitude. Calculados UMA vez, no campo mestre, e reusados nos dois
-    conjuntos — se cada recorte calculasse os seus proprios, as curvas da tela externa
-    cairiam em altitudes diferentes das da interna e o mapa saltaria ao desdobrar."""
+    """Altitude levels. Computed ONCE, on the master field, and reused for both
+    sets — if each crop computed its own, the outer screen's contours would land at
+    different altitudes from the inner screen's and the map would jump when unfolding."""
     return np.linspace(field.min(), field.max(), levels + 2)[1:-1]
 
 
@@ -102,9 +102,9 @@ def export_layers(field, outdir, width, height, tag, levels, bands=3,
     ys = np.linspace(0, grid_h, grid_h)
     all_levels = np.asarray(levels)
 
-    groups = {f"linhas_{tag}.png": (all_levels, 0)}
+    groups = {f"lines_{tag}.png": (all_levels, 0)}
     for i, idx in enumerate(np.array_split(np.arange(len(all_levels)), bands), 1):
-        groups[f"linhas{i}_{tag}.png"] = (all_levels[idx], int(idx[0]))
+        groups[f"lines{i}_{tag}.png"] = (all_levels[idx], int(idx[0]))
 
     for fname, (lv, offset) in groups.items():
         if len(lv) == 0:
@@ -115,10 +115,10 @@ def export_layers(field, outdir, width, height, tag, levels, bands=3,
         ax.set_axis_off()
         ax.patch.set_alpha(0.0)
 
-        if glow:                      # halo suave por tras das linhas
+        if glow:                      # soft halo behind the lines
             ax.contour(xs, ys, field, levels=lv, colors="white",
                        linewidths=4.5, alpha=0.12)
-        # espessura alternada: a cada 5 curvas uma mais grossa, como num mapa real
+        # alternating width: every 5th contour is thicker, as on a real map
         widths = [1.9 if (offset + i) % 5 == 0 else 0.85 for i in range(len(lv))]
         ax.contour(xs, ys, field, levels=lv, colors="white",
                    linewidths=widths, alpha=0.92)

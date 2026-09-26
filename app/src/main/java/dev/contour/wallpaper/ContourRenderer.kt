@@ -12,10 +12,10 @@ import android.graphics.RectF
 import android.graphics.Shader
 
 /**
- * Compositor de três passos: gradiente vertical + PNGs de linhas tingidos com SRC_IN.
- * Mantém UM bitmap por camada e troca só o ColorFilter — nunca cria cópias tingidas.
+ * Three-pass compositor: vertical gradient + line PNGs tinted with SRC_IN.
+ * Keeps ONE bitmap per layer and only swaps the ColorFilter — never creates tinted copies.
  *
- * @param sampleSize inSampleSize ao decodificar (1 no wallpaper; 2 na prévia).
+ * @param sampleSize inSampleSize when decoding (1 in the wallpaper; 2 in the preview).
  */
 class ContourRenderer(context: Context, private val sampleSize: Int = 1) {
 
@@ -32,16 +32,16 @@ class ContourRenderer(context: Context, private val sampleSize: Int = 1) {
     private val layerPaint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
     private val dst = RectF()
 
-    /** Mais largo que ~0.7 → tela interna do dobrável (assets _main); senão _cover. */
+    /** Wider than ~0.7 → foldable's inner screen (_main assets); otherwise _cover. */
     fun chooseSet(width: Int, height: Int): AssetSet =
         if (height > 0 && width.toFloat() / height > 0.7f) AssetSet.MAIN else AssetSet.COVER
 
     private fun fileNames(set: AssetSet, mode: LayerMode): List<String> = when (mode) {
-        LayerMode.SINGLE -> listOf("linhas_${set.suffix}.png")
-        LayerMode.THREE -> (1..3).map { "linhas${it}_${set.suffix}.png" }
+        LayerMode.SINGLE -> listOf("lines_${set.suffix}.png")
+        LayerMode.THREE -> (1..3).map { "lines${it}_${set.suffix}.png" }
     }
 
-    /** Carrega (se preciso) o conjunto pedido, liberando o anterior. Pode ser chamado fora da main thread. */
+    /** Loads the requested set (if needed), releasing the previous one. May be called off the main thread. */
     fun ensureAssets(set: AssetSet, mode: LayerMode) {
         synchronized(lock) {
             if (set == loadedSet && mode == loadedMode && bitmaps.isNotEmpty()) return
@@ -64,18 +64,18 @@ class ContourRenderer(context: Context, private val sampleSize: Int = 1) {
         }
     }
 
-    /** Desenha a composição completa em [canvas] para uma superfície de [width]×[height]. */
+    /** Draws the full composition into [canvas] for a [width]×[height] surface. */
     fun draw(canvas: Canvas, width: Int, height: Int, colors: DayColors, mode: LayerMode) {
         if (width <= 0 || height <= 0) return
 
-        // 1. Fundo
+        // 1. Background
         gradientPaint.shader = LinearGradient(
             0f, 0f, 0f, height.toFloat(),
             colors.bgTop, colors.bgBottom, Shader.TileMode.CLAMP,
         )
         canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), gradientPaint)
 
-        // 2. Linhas
+        // 2. Lines
         synchronized(lock) {
             if (bitmaps.isEmpty()) return
             val lineColors: IntArray = when (mode) {
@@ -92,9 +92,9 @@ class ContourRenderer(context: Context, private val sampleSize: Int = 1) {
     }
 
     /**
-     * Encaixa pela altura e centraliza horizontalmente, cortando o excesso (preserva o
-     * alinhamento cover/main). Se ainda assim sobrar largura (superfície de parallax
-     * muito larga), sobe a escala para não deixar bordas vazias.
+     * Fits to height and centres horizontally, cropping the excess (keeps the cover/main
+     * alignment). If there is still width left over (a very wide parallax surface), the
+     * scale goes up so no empty edges are left.
      */
     private fun computeDst(bmp: Bitmap, width: Int, height: Int) {
         var scale = height.toFloat() / bmp.height

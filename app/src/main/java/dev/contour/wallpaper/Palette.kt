@@ -8,14 +8,14 @@ object Palette {
     private fun hex(s: String): Int = ColorMath.parseHex(s)!!
 
     /**
-     * As seis âncoras da spec, já com a trava de contraste aplicada.
+     * The spec's six anchors, with the contrast lock already applied.
      *
-     * Tarde e Anoitecer tiveram o topo suavizado em relação à tabela original: o
-     * #F6D8A8 das 17h e o #432A5C das 20h ficavam berrantes na tela inteira. O topo
-     * das 17h passou a um cinza-quente frio (céu real de fim de tarde) e o das 20h a
-     * um violeta mais fundo. Com o fundo novo, duas cores de linha caíam abaixo de
-     * 2.1 de contraste, então já entram aqui com o valor que a trava produziria:
-     * 17h line2 #C56B14 -> #A95C11 e 20h line3 #2B1930 -> #190F1C.
+     * Afternoon and Dusk had their top softened compared with the original table: the
+     * 17:00 #F6D8A8 and the 20:00 #432A5C looked garish filling the whole screen. The
+     * 17:00 top became a cool warm-grey (a real late-afternoon sky) and the 20:00 one a
+     * deeper violet. With the new background, two line colours fell below 2.1 contrast,
+     * so they ship here with the value the lock would produce:
+     * 17:00 line2 #C56B14 -> #A95C11 and 20:00 line3 #2B1930 -> #190F1C.
      */
     val DEFAULT_ANCHORS: List<ColorAnchor> = listOf(
         ColorAnchor(5.0f, "Dawn", hex("#1B2A4A"), hex("#C98B7A"), hex("#FFC9A3"), hex("#FFE8D6"), hex("#AC93AE")),
@@ -27,8 +27,8 @@ object Palette {
     )
 
     /**
-     * Cores para o instante [hour] (0..24). Acha as duas âncoras vizinhas (com volta pela
-     * meia-noite), aplica smoothstep na fração e mistura cada papel em RGB.
+     * Colours for the moment [hour] (0..24). Finds the two neighbouring anchors (wrapping
+     * around midnight), applies smoothstep to the fraction and blends each role in RGB.
      */
     fun colorsAt(anchors: List<ColorAnchor>, hour: Float): DayColors {
         require(anchors.isNotEmpty())
@@ -43,7 +43,7 @@ object Palette {
         val span: Float
         val elapsed: Float
         if (idx == -1 || idx == sorted.lastIndex) {
-            // Trecho que atravessa a meia-noite: última âncora -> primeira do dia seguinte.
+            // Segment crossing midnight: last anchor -> first anchor of the next day.
             a = sorted.last()
             b = sorted.first()
             span = 24f - a.hour + b.hour
@@ -67,7 +67,7 @@ object Palette {
         )
     }
 
-    /** Trava de contraste sobre as três cores de linha, contra a média do fundo. */
+    /** Contrast lock on the three line colours, against the background average. */
     fun applyContrast(colors: DayColors, target: Float): DayColors {
         if (target <= 1.0f) return colors
         val bg = ColorMath.average(colors.bgTop, colors.bgBottom)

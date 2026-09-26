@@ -54,7 +54,7 @@ class SettingsActivity : Activity() {
     private var layerMode = LayerMode.THREE
     private var contrast = Palette.DEFAULT_CONTRAST
 
-    /** -1 = horário real; senão minuto do dia forçado pelo slider. Volta ao real ao sair da tela. */
+    /** -1 = real time; otherwise the minute of the day forced by the slider. Resets to real time on leaving the screen. */
     private var forcedMinute = -1
     private var syncing = false
 
@@ -219,7 +219,7 @@ class SettingsActivity : Activity() {
         return c.get(Calendar.HOUR_OF_DAY) * 60 + c.get(Calendar.MINUTE)
     }
 
-    /** O slider mostra a hora do relógio; a paleta usa a hora já ajustada ao sol. */
+    /** The slider shows the clock time; the palette uses the time already adjusted to the sun. */
     private fun paletteHour(clockHour: Float): Float =
         SolarWarp.paletteHour(clockHour, repo.solarEnabled, repo.latitude, repo.longitude)
 
@@ -252,7 +252,7 @@ class SettingsActivity : Activity() {
         }
     }
 
-    /** Lê a localização UMA vez e guarda as coordenadas. Nada disso roda no wallpaper. */
+    /** Reads the location ONCE and stores the coordinates. None of this runs in the wallpaper. */
     private fun requestLocation() {
         if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION), REQ_LOCATION)
@@ -300,7 +300,7 @@ class SettingsActivity : Activity() {
         anchorList.removeAllViews()
         val inflater = LayoutInflater.from(this)
         val swatchW = (22 * resources.displayMetrics.density).toInt()
-        // Com o modo solar ligado a hora definida não é a que vale: mostrar as duas.
+        // With solar mode on, the set time isn't the one in effect: show both.
         val sun = if (repo.solarEnabled && repo.hasLocation) {
             SolarTime.forDate(Calendar.getInstance(), repo.latitude.toDouble(), repo.longitude.toDouble())
         } else {

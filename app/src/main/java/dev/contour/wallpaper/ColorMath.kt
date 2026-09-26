@@ -8,7 +8,7 @@ object ColorMath {
 
     fun toHex(color: Int): String = String.format("#%06X", color and 0xFFFFFF)
 
-    /** Aceita "#RRGGBB" ou "RRGGBB" (maiúsculas ou minúsculas). Retorna cor opaca. */
+    /** Accepts "#RRGGBB" or "RRGGBB" (upper or lower case). Returns an opaque colour. */
     fun parseHex(text: String): Int? {
         val t = text.trim().removePrefix("#")
         if (t.length != 6) return null
@@ -53,7 +53,7 @@ object ColorMath {
         return (hi + 0.05) / (lo + 0.05)
     }
 
-    // ---- HLS (mesma convenção do colorsys do Python: h, l, s em 0..1) ----
+    // ---- HLS (same convention as Python's colorsys: h, l, s in 0..1) ----
 
     fun rgbToHls(color: Int): FloatArray {
         val r = Color.red(color) / 255f
@@ -104,14 +104,14 @@ object ColorMath {
         )
     }
 
-    // ---- Trava de contraste ----
+    // ---- Contrast lock ----
 
     /**
-     * Garante que [line] tenha contraste >= [target] contra [background].
-     * Só a luminosidade (HLS) é alterada, em passos de 0.02, testando as duas direções
-     * e ficando com a que atinge o alvo com a menor mudança. Se nenhuma direção chega
-     * ao alvo (cores extremas), devolve a candidata com maior contraste encontrada.
-     * target <= 1.0 desliga a trava.
+     * Ensures [line] has contrast >= [target] against [background].
+     * Only lightness (HLS) is changed, in steps of 0.02, trying both directions and
+     * keeping the one that reaches the target with the smallest change. If neither
+     * direction reaches the target (extreme colours), returns the highest-contrast
+     * candidate found. target <= 1.0 disables the lock.
      */
     fun ensureContrast(line: Int, background: Int, target: Float): Int {
         if (target <= 1.0f) return line

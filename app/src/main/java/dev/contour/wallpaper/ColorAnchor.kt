@@ -3,7 +3,7 @@ package dev.contour.wallpaper
 import org.json.JSONArray
 import org.json.JSONObject
 
-/** Uma âncora da paleta do dia: um instante (0.0–24.0) e as cinco cores daquele momento. */
+/** An anchor of the day palette: a moment (0.0–24.0) and the five colours for that moment. */
 data class ColorAnchor(
     val hour: Float,
     val name: String,
@@ -13,13 +13,13 @@ data class ColorAnchor(
     val line2: Int,
     val line3: Int,
     /**
-     * Cor base do modo simples, ou null quando as cinco cores foram escolhidas à mão.
-     * As cinco cores continuam sempre gravadas — o seed serve para a tela lembrar de que
-     * cor elas vieram, então o desenho e a interpolação não mudam nada.
+     * Base colour for simple mode, or null when the five colours were picked by hand.
+     * The five colours are always stored as well — the seed only lets the screen remember
+     * which colour they came from, so drawing and interpolation are unaffected.
      */
     val seed: Int? = null,
 ) {
-    /** Recalcula as cinco cores a partir de [seed], mantendo hora e nome. */
+    /** Recomputes the five colours from [seed], keeping the hour and name. */
     fun withSeed(seed: Int, contrastFloor: Float): ColorAnchor {
         val c = SimplePalette.derive(seed, contrastFloor)
         return copy(
@@ -74,7 +74,7 @@ data class ColorAnchor(
     }
 }
 
-/** As cinco cores resolvidas para um instante do dia. */
+/** The five colours resolved for a moment of the day. */
 data class DayColors(
     val bgTop: Int,
     val bgBottom: Int,
