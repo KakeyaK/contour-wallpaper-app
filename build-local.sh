@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Build sem Gradle/Android Studio, usando só pacotes do Ubuntu + kotlinc.
+# Build without Gradle/Android Studio, using only Ubuntu packages + kotlinc.
 #   apt install aapt android-sdk-platform-23 dalvik-exchange apksigner zipalign openjdk-17-jdk-headless
-#   kotlinc: https://github.com/JetBrains/kotlin/releases  (descompactar em /opt/kotlinc)
-# Compila contra android.jar API 23 (o código só usa APIs antigas); minSdk 26 no manifesto.
+#   kotlinc: https://github.com/JetBrains/kotlin/releases  (unzip into /opt/kotlinc)
+# Compiles against the API 23 android.jar (the code only uses old APIs); minSdk 26 in the manifest.
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -15,7 +15,7 @@ SRC=app/src/main
 
 rm -rf "$OUT" && mkdir -p "$OUT"/{res,gen,classes,dex,stdlib}
 
-# Manifesto com min/target SDK (o Gradle injeta isso; aqui é manual).
+# Manifest with min/target SDK (Gradle injects this; here it is done by hand).
 sed -e 's|<application|<uses-sdk android:minSdkVersion="26" android:targetSdkVersion="34" />\n    <application|' \
     -e 's|<manifest |<manifest package="dev.contour.wallpaper" android:versionCode="1" android:versionName="1.0" |' \
     "$SRC/AndroidManifest.xml" > "$OUT/AndroidManifest.xml"
@@ -33,13 +33,13 @@ echo "[3/6] kotlinc"
 "$KOTLINC" -jvm-target 1.8 -Xlambdas=class -Xsam-conversions=class -Xstring-concat=inline \
     -no-reflect -cp "$ANDROID_JAR:$OUT/classes" -d "$OUT/classes" $(find "$SRC/java" -name '*.kt')
 
-echo "[4/6] stdlib sem module-info (dx não lê classfiles > Java 8)"
+echo "[4/6] stdlib without module-info (dx cannot read classfiles > Java 8)"
 (cd "$OUT/stdlib" && unzip -q "$KOTLIN_STDLIB" -x 'module-info.class' 'META-INF/versions/*')
 
 echo "[5/6] dx"
 "$DX" --dex --min-sdk-version=26 --output="$OUT/dex/classes.dex" "$OUT/classes" "$OUT/stdlib"
 
-echo "[6/6] empacotar, alinhar, assinar"
+echo "[6/6] package, align, sign"
 (cd "$OUT/dex" && zip -q ../app-unaligned.apk classes.dex)
 zipalign -f -p 4 "$OUT/app-unaligned.apk" "$OUT/app-aligned.apk"
 KS="$OUT/debug.keystore"

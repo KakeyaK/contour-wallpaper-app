@@ -14,7 +14,7 @@ import android.widget.TextView
 import dev.contour.wallpaper.ColorMath
 import dev.contour.wallpaper.R
 
-/** Pinta uma View como amostra de cor (cantos arredondados + borda fina). */
+/** Paints a View as a colour swatch (rounded corners + thin border). */
 fun View.setSwatchColor(color: Int, radiusDp: Float = 8f) {
     val d = GradientDrawable().apply {
         setShape(GradientDrawable.RECTANGLE)
@@ -25,7 +25,7 @@ fun View.setSwatchColor(color: Int, radiusDp: Float = 8f) {
     background = d
 }
 
-/** Seletor de cor: amostra + hex digitado + três SeekBars (HSV). */
+/** Colour picker: swatch + typed hex + three SeekBars (HSV). */
 fun showColorPicker(context: Context, title: String, initial: Int, onPick: (Int) -> Unit) {
     val view = LayoutInflater.from(context).inflate(R.layout.dialog_color_picker, null)
     val swatch = view.byId<View>(R.id.picker_swatch)
@@ -91,8 +91,8 @@ fun showColorPicker(context: Context, title: String, initial: Int, onPick: (Int)
 }
 
 /**
- * Linha "amostra + rótulo + hex" (layout row_color) que abre o seletor ao tocar.
- * Retorna uma função para atualizar a cor exibida.
+ * A "swatch + label + hex" row (row_color layout) that opens the picker when tapped.
+ * Returns a function to update the displayed colour.
  */
 fun bindColorRow(row: View, label: String, initial: Int, onChange: (Int) -> Unit): (Int) -> Unit {
     val swatch = row.byId<View>(R.id.color_swatch)

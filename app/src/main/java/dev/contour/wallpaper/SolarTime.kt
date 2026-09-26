@@ -10,22 +10,22 @@ import kotlin.math.sin
 import kotlin.math.tan
 
 /**
- * Nascer e pôr do sol pelo algoritmo do NOAA (o mesmo da planilha solar deles).
- * Só aritmética — nenhuma rede, nenhum serviço de localização. As coordenadas são
- * guardadas uma vez pela tela de configurações; o wallpaper apenas faz a conta.
- * Precisão de ~1 minuto, mais que suficiente para escolher cores.
+ * Sunrise and sunset using NOAA's algorithm (the same as their solar spreadsheet).
+ * Pure arithmetic — no network, no location services. The coordinates are stored once
+ * by the settings screen; the wallpaper just does the math.
+ * Accurate to ~1 minute, more than enough for picking colours.
  */
 object SolarTime {
 
-    /** Horas locais (0..24) do nascer e do pôr do sol. */
+    /** Local times (0..24) of sunrise and sunset. */
     data class Sun(val sunrise: Float, val sunset: Float)
 
-    private const val ZENITH = 90.833 // inclui refração atmosférica e o raio do disco solar
+    private const val ZENITH = 90.833 // includes atmospheric refraction and the solar disc radius
 
     private fun rad(d: Double) = Math.toRadians(d)
     private fun deg(r: Double) = Math.toDegrees(r)
 
-    /** Dia juliano às 0h UT da data civil informada. */
+    /** Julian day at 0h UT of the given civil date. */
     private fun julianDay(year: Int, month: Int, day: Int): Double {
         var y = year
         var m = month
@@ -39,9 +39,9 @@ object SolarTime {
     }
 
     /**
-     * Calcula o nascer e o pôr do sol para a data de [cal] (com o fuso do próprio
-     * Calendar). Retorna null quando o sol não nasce nem se põe naquele dia — sol da
-     * meia-noite ou noite polar — e nesses casos quem chama volta ao relógio normal.
+     * Computes sunrise and sunset for the date of [cal] (in the Calendar's own time
+     * zone). Returns null when the sun neither rises nor sets that day — midnight sun or
+     * polar night — and in those cases the caller falls back to the normal clock.
      */
     fun forDate(cal: Calendar, latitude: Double, longitude: Double): Sun? {
         if (latitude.isNaN() || longitude.isNaN()) return null
@@ -80,13 +80,13 @@ object SolarTime {
 
         val cosHa = cos(rad(ZENITH)) / (cos(rad(latitude)) * cos(rad(declination))) -
             tan(rad(latitude)) * tan(rad(declination))
-        if (cosHa > 1.0 || cosHa < -1.0) return null // sol da meia-noite ou noite polar
+        if (cosHa > 1.0 || cosHa < -1.0) return null // midnight sun or polar night
         val haMinutes = deg(acos(cosHa)) * 4.0
 
         val solarNoon = 720.0 - 4.0 * longitude - eqTime + tzMinutes
         val sunrise = normalizeHour((solarNoon - haMinutes) / 60.0)
         val sunset = normalizeHour((solarNoon + haMinutes) / 60.0)
-        if (sunset <= sunrise) return null // fuso muito fora da longitude: melhor não distorcer
+        if (sunset <= sunrise) return null // time zone far off the longitude: better not to distort
         return Sun(sunrise, sunset)
     }
 
@@ -97,20 +97,20 @@ object SolarTime {
 }
 
 /**
- * Converte a hora do relógio na hora que a paleta deve usar, esticando o dia e a noite
- * reais sobre os trechos de referência da paleta.
+ * Converts the clock time into the time the palette should use, stretching the actual
+ * day and night over the palette's reference segments.
  *
- * A âncora das [REF_SUNRISE] passa a cair exatamente no nascer do sol e a das
- * [REF_SUNSET] no pôr; o que está entre elas é esticado ou comprimido junto. No inverno,
- * com o dia mais curto, o miolo claro da paleta encolhe e a noite se alonga — que é o
- * comportamento que se espera de "acompanhar o sol".
+ * The [REF_SUNRISE] anchor lands exactly on sunrise and the [REF_SUNSET] one on sunset;
+ * whatever lies between them is stretched or compressed along with them. In winter, with
+ * a shorter day, the bright middle of the palette shrinks and the night gets longer —
+ * which is the behaviour you'd expect from "following the sun".
  *
- * O mapa é contínuo e monotônico, inclusive na virada da meia-noite, então as cores
- * continuam mudando sem saltos (critério de aceitação 2).
+ * The mapping is continuous and monotonic, including across midnight, so the colours
+ * keep changing without jumps (acceptance criterion 2).
  */
 object SolarWarp {
 
-    /** Âncoras de referência: as horas do "Amanhecer" e do "Anoitecer" da paleta padrão. */
+    /** Reference anchors: the times of the default palette's "Dawn" and "Dusk". */
     const val REF_SUNRISE = 5.0f
     const val REF_SUNSET = 20.0f
 
@@ -131,9 +131,9 @@ object SolarWarp {
     }
 
     /**
-     * Caminho inverso: dada uma hora da paleta, em que hora do relógio ela acontece hoje.
-     * É o que a tela de configurações usa para mostrar que o modo solar está
-     * sobrescrevendo os horários definidos pelo usuário.
+     * Inverse mapping: given a palette time, at what clock time it happens today.
+     * The settings screen uses this to show that solar mode is overriding the times set
+     * by the user.
      */
     fun unwarp(paletteHour: Float, sun: SolarTime.Sun): Float {
         val dayLength = sun.sunset - sun.sunrise
@@ -152,8 +152,8 @@ object SolarWarp {
     }
 
     /**
-     * Hora que a paleta deve usar. Se o modo solar estiver desligado, sem coordenadas, ou
-     * se for um dia sem nascer/pôr do sol, devolve a própria hora do relógio.
+     * Time the palette should use. If solar mode is off, there are no coordinates, or it
+     * is a day without sunrise/sunset, returns the clock time itself.
      */
     fun paletteHour(
         clockHour: Float,

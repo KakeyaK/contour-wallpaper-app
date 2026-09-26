@@ -22,8 +22,8 @@ import dev.contour.wallpaper.SolarWarp
 import java.util.Calendar
 
 /**
- * Editor de uma âncora. Extra [EXTRA_INDEX] = índice na lista ordenada, ou -1 para nova.
- * Grava no repositório ao salvar; o serviço e a tela principal reagem sozinhos.
+ * Editor for one anchor. Extra [EXTRA_INDEX] = index in the sorted list, or -1 for a new one.
+ * Writes to the repository on save; the service and the main screen react on their own.
  */
 class AnchorEditorActivity : Activity() {
 
@@ -74,7 +74,7 @@ class AnchorEditorActivity : Activity() {
 
         val bgRows = byId<LinearLayout>(R.id.bg_rows)
         val lineRows = byId<LinearLayout>(R.id.line_rows)
-        // Editar uma cor à mão desliga o modo simples: as cinco deixam de vir do seed.
+        // Editing a colour by hand turns off simple mode: the five no longer come from the seed.
         showColor += addRow(bgRows, "Top", anchor.bgTop) { anchor = anchor.copy(bgTop = it, seed = null) }
         showColor += addRow(bgRows, "Bottom", anchor.bgBottom) { anchor = anchor.copy(bgBottom = it, seed = null) }
         showColor += addRow(lineRows, "Line 1 — lowest band", anchor.line1) { anchor = anchor.copy(line1 = it, seed = null) }
@@ -117,7 +117,7 @@ class AnchorEditorActivity : Activity() {
         return update
     }
 
-    /** Cor base inicial quando a âncora nunca teve seed: a de baixo do fundo. */
+    /** Initial base colour when the anchor never had a seed: the background's bottom colour. */
     private fun suggestSeed(): Int = anchor.bgBottom
 
     private fun applySeed(seed: Int) {
@@ -140,7 +140,7 @@ class AnchorEditorActivity : Activity() {
         if (simple) showDerived()
     }
 
-    /** Mostra as cinco cores geradas e o contraste de cada linha, para não ser caixa-preta. */
+    /** Shows the five generated colours and each line's contrast, so it isn't a black box. */
     private fun showDerived() {
         val bg = ColorMath.average(anchor.bgTop, anchor.bgBottom)
         derivedPreview.text = "line contrast  " + listOf(anchor.line1, anchor.line2, anchor.line3)
@@ -159,7 +159,7 @@ class AnchorEditorActivity : Activity() {
         showSolarNote()
     }
 
-    /** Com o modo solar ligado, este horário não é o que vale: mostrar o real. */
+    /** With solar mode on, this time isn't the one in effect: show the actual one. */
     private fun showSolarNote() {
         val note = byId<TextView>(R.id.solar_note)
         val sun = if (repo.solarEnabled && repo.hasLocation) {
@@ -212,7 +212,7 @@ class AnchorEditorActivity : Activity() {
     companion object {
         const val EXTRA_INDEX = "index"
 
-        /** Nova âncora: hora atual e as cores interpoladas desse instante. */
+        /** New anchor: the current time and the colours interpolated for that moment. */
         fun newAnchorTemplate(anchors: List<ColorAnchor>): ColorAnchor {
             val c = Calendar.getInstance()
             val hour = c.get(Calendar.HOUR_OF_DAY) + c.get(Calendar.MINUTE) / 60f

@@ -12,8 +12,8 @@ import dev.contour.wallpaper.LayerMode
 import dev.contour.wallpaper.Palette
 
 /**
- * Prévia ao vivo usando o mesmo compositor do serviço. Proporção fixa 1080:2520 (assets
- * _cover), decodificados com inSampleSize = 2 para poupar memória na Activity.
+ * Live preview using the same compositor as the service. Fixed 1080:2520 aspect ratio
+ * (_cover assets), decoded with inSampleSize = 2 to save memory in the Activity.
  */
 class PreviewView(context: Context, attrs: AttributeSet? = null) : View(context, attrs) {
 

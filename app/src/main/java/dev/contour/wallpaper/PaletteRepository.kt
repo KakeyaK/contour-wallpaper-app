@@ -6,8 +6,8 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * Persistência das âncoras e preferências em SharedPreferences (JSON).
- * O serviço escuta as mudanças e redesenha na hora.
+ * Persists anchors and preferences in SharedPreferences (JSON).
+ * The service listens for changes and redraws immediately.
  */
 class PaletteRepository(context: Context) {
 
@@ -41,12 +41,12 @@ class PaletteRepository(context: Context) {
             .putInt(KEY_INTERVAL, if (value in ALLOWED_INTERVALS) value else Palette.DEFAULT_INTERVAL_MINUTES)
             .apply()
 
-    /** Modo solar: as âncoras de 5h e 20h passam a seguir o nascer e o pôr do sol reais. */
+    /** Solar mode: the 5:00 and 20:00 anchors follow the actual sunrise and sunset. */
     var solarEnabled: Boolean
         get() = prefs.getBoolean(KEY_SOLAR, false)
         set(value) = prefs.edit().putBoolean(KEY_SOLAR, value).apply()
 
-    /** Coordenadas guardadas uma única vez; o serviço nunca consulta localização. */
+    /** Coordinates stored only once; the service never queries location. */
     var latitude: Float
         get() = prefs.getFloat(KEY_LAT, Float.NaN)
         set(value) = prefs.edit().putFloat(KEY_LAT, value).apply()
@@ -62,7 +62,7 @@ class PaletteRepository(context: Context) {
         prefs.edit().putFloat(KEY_LAT, lat).putFloat(KEY_LON, lon).apply()
     }
 
-    /** Não mexe no modo solar nem nas coordenadas: são ajustes de local, não da paleta. */
+    /** Leaves solar mode and coordinates alone: they are location settings, not palette settings. */
     fun restoreDefaults() {
         prefs.edit()
             .putString(KEY_ANCHORS, ColorAnchor.listToJson(Palette.DEFAULT_ANCHORS).toString())
@@ -80,7 +80,7 @@ class PaletteRepository(context: Context) {
         put("intervalMinutes", intervalMinutes)
     }.toString(2)
 
-    /** Aceita o objeto exportado ou só a lista de âncoras. Retorna false se inválido. */
+    /** Accepts the exported object or just the list of anchors. Returns false if invalid. */
     fun importJson(text: String): Boolean {
         val trimmed = text.trim()
         return runCatching {

@@ -29,7 +29,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    // Os PNGs de linhas já vêm comprimidos; não recomprimir no APK.
+    // The line PNGs are already compressed; don't recompress them in the APK.
     androidResources {
         noCompress += listOf("png")
     }
@@ -41,6 +41,6 @@ kotlin {
     }
 }
 
-// Sem dependências: só o framework Android. A UI de configurações é feita com Views.
+// No dependencies: only the Android framework. The settings UI is built with Views.
 dependencies {
 }
